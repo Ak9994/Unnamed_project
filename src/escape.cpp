@@ -148,5 +148,34 @@ GameOutcome Escape::Select_exit(int LID,GameState& SID){
             else if(Temp_exit.has_value()){ std::cout << "Picked exit " << sel_exit << "\n";}
             else { std::cout << "Picked exit <none>\n"; }
         }
-    } };
+    } 
+};
+
+
+GameOutcome Escape::end_loop(int level, GameState& state) {
+    //if lvl == 6 && Max_Age == 100
+    if (level == 6) {
+        if (state.age == cfg.max_age) {
+            std::cout << "Failed to escape! \n"
+                << "Max level reached:" << level << "\n"
+                << "and Max age reached:" << cfg.max_age;
+
+            return GameOutcome::Fail;
+        }
+        else if (state.age <= cfg.max_age) {
+            std::cout << "Successful Escape! \n"
+                << "level reached:" << level << "\n"
+                << "Current age:" << state.age;
+
+            return GameOutcome::Success;
+        }
+        else {
+            std::cout << "Get level and Age & no exit reached \n"
+                << "level reached:" << level << "\n"
+                << "Current age:" << state.age;
+
+            return GameOutcome::None;
+        }
+    }
+};
 
