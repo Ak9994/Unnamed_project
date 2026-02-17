@@ -3,10 +3,10 @@
 
 class RNG{
     private:
-        std::mt19937 spawn;
+        std::mt19937 SpawnRNG;
     public:
         RNG();
-        int UniformDistribution(int min,int max);
+        int uniformInt(int min,int max);
         bool chance(float prob);
-        std::mt19937 engine();
+        std::mt19937& engine();
 };
