@@ -1,5 +1,5 @@
-#include<include/Escape.h>
-#include<include/GameConfig.h>
+#include "include/Escape.h"
+#include "include/GameConfig.h"
 
 int main() {
 	GameConfig PlayerCfg;
@@ -21,4 +21,5 @@ int main() {
 
 	return 0;
 }
+
 
