@@ -24,7 +24,7 @@ class Escape{
         std::vector<int> Level_remaining;
         int Start_Level;
         bool levels_cleared = false;
-        bool level_iter = true;
+        bool level_iteration = true;
     public:
         Escape(GameConfig& config);
         void GameLoop();
