@@ -10,13 +10,87 @@ Escape::Escape(GameConfig& config):cfg(config){
     for(int i=0;i<6;i++){
         Level_remaining.push_back(i);
     }
-    Start_Level = rng.UniformDistribution(1,6);
+    Start_Level = rng.uniformInt(1,6);
     //Start at level Generated
     auto Current_level = std::find(Level_remaining.begin(),Level_remaining.end(),Start_Level);
     //Swap the start
     if(Current_level != Level_remaining.end()){
         std::iter_swap(Current_level,Level_remaining.begin());
     }
+};
+
+int Escape::PickNextLevel(){
+    if(level_iteration){
+        level_iteration = false;
+        //Display Current Level
+        std::cout << "the current level is" << Start_Level << "\n";
+    }
+    //Check remaining levels to see if final stage or not
+    if(Level_remaining.size() == 1){ return Level_remaining.front(); }
+    //Shuffle the levels
+    std::shuffle(Level_remaining.begin(),
+                 Level_remaining.end(),
+                 rng.engine());
+    return Level_remaining.front();
+};
+
+void Escape::RemoveLevel(int lvl){
+    auto level = std::find(Level_remaining.begin(),Level_remaining.end(),lvl);
+        if (level != Level_remaining.end()) Level_remaining.erase(level);
+        levels_cleared = false; // reset flag
+};
+
+GameOutcome Escape::Select_exit(int LID,GameState& SID){
+    levels_cleared = false;
+    GameOutcome exit_outcome = GameOutcome::None;
+    //Exit variable
+    int CorrectExit = rng.uniformInt(1,cfg.ExitSpawn_Count);
+    std::cout << "Level:" << LID
+              << "has spawned:" << cfg.ExitSpawn_Count
+              << "exits , Only one correct exit exists \n";
+    //Selection_Loop
+    for( int sel_exit = 0; sel_exit <= cfg.ExitSpawn_Count; sel_exit++){
+        //Take player Input
+        std::string choice;
+        bool select = false;
+        //Temp storage for selection
+        std::optional<int> Temp_exit;
+        int input = std::stoi(choice);
+
+        if(cfg.Idleplay){
+            
+            std::cout << " Attempt no: " << sel_exit
+                        << " Choose exit: 1-" << cfg.ExitSpawn_Count
+                        << ") or 'N' for no choice: ";
+        
+            std::getline(std::cin,choice);
+
+            if(choice.empty()){ select = true; }
+            else if((choice == "N") || (choice == "n")){ select = true; }
+            else{
+                try {
+                        if((input >= 1) && (input <= cfg.ExitSpawn_Count)){
+                        Temp_exit = input;
+                    } else {
+                    //invalidate Choice
+                        std::cout << "Invalid input & counting as wrong choice.\n";
+                        Temp_exit = -1; }
+                } catch (...){
+                //invalidate Choice
+                    std::cout << "Invalid input & counting as wrong choice.\n";
+                    Temp_exit = -1; }
+            } 
+        }
+        else {
+            //Testing Auto Input
+            select = rng.chance(cfg.CorrectSelectionProb);
+            if(!input) { Temp_exit = rng.uniformInt(1,cfg.ExitSpawn_Count); }
+            std::cout << " Attempt no: " << sel_exit << "\n";
+            if(select){ std::cout << "No Choice Made \n";}
+            else if(Temp_exit.has_value()){ std::cout << "Picked exit " << sel_exit << "\n";}
+            else { std::cout << "Picked exit <none>\n"; }
+        }
+    } 
 };
 
 void Escape::GameLoop(){
@@ -75,83 +149,6 @@ void Escape::GameLoop(){
     }
 };
 
-int Escape::PickNextLevel(){
-    if(level_iter){
-        level_iter = false;
-        //Display Current Level
-        std::cout << "the current level is" << Start_Level << "\n";
-    }
-    //Check remaining levels to see if final stage or not
-    if(Level_remaining.size() == 1){ return Level_remaining.front(); }
-    //Shuffle the levels
-    std::Shuffle(
-                Level_remaining.begin()+1,
-                Level_remaining.end(),
-                rng.rand(),
-                );
-    return Level_remaining.front();
-};
-
-void Escape::RemoveLevel(int lvl){
-    auto level = std::find(Level_remaining.begin(),Level_remaining.end(),lvl);
-        if (level != Level_remaining.end()) Level_remaining.erase(level);
-        levels_cleared = false; // reset flag
-};
-
-GameOutcome Escape::Select_exit(int LID,GameState& SID){
-    levels_cleared = false;
-    GameOutcome exit_outcome = GameOutcome::None;
-    //Exit variable
-    int CorrectExit = rng.UniformDistribution(1,cfg.ExitSpawn_Count);
-    std::cout << "Level:" << LID
-              << "has spawned:" << cfg.ExitSpawn_Count
-              << "exits , Only one correct exit exists \n";
-    //Selection_Loop
-    for( int sel_exit = 0; sel_exit <= cfg.ExitSpawn_Count; sel_exit++){
-        //Take player Input
-        std::string choice;
-        bool select = false;
-        //Temp storage for selection
-        std::optional<int> Temp_exit;
-        int input = std::stoi(choice);
-
-        if(cfg.Idleplay){
-            
-            std::cout << " Attempt no: " << sel_exit
-                        << " Choose exit: 1-" << cfg.ExitSpawn_Count
-                        << ") or 'N' for no choice: ";
-        
-            std::getline(std::cin,choice);
-
-            if(choice.empty()){ select = true; }
-            else if((choice == "N") || (choice == "n")){ select = true; }
-            else{
-                try {
-                        if((input >= 1) && (input <= cfg.ExitSpawn_Count)){
-                        Temp_exit = input;
-                    } else {
-                    //invalidate Choice
-                        std::cout << "Invalid input & counting as wrong choice.\n";
-                        Temp_exit = -1; }
-                } catch (...){
-                //invalidate Choice
-                    std::cout << "Invalid input & counting as wrong choice.\n";
-                    Temp_exit = -1; }
-            } 
-        }
-        else {
-            //Testing Auto Input
-            select = rng.chance(cfg.CorrectSelectionProb);
-            if(!input) { Temp_exit = rng.UniformDistribution(1,cfg.ExitSpawn_Count); }
-            std::cout << " Attempt no: " << sel_exit << "\n";
-            if(select){ std::cout << "No Choice Made \n";}
-            else if(Temp_exit.has_value()){ std::cout << "Picked exit " << sel_exit << "\n";}
-            else { std::cout << "Picked exit <none>\n"; }
-        }
-    } 
-};
-
-
 GameOutcome Escape::end_loop(int level, GameState& state) {
     //if lvl == 6 && Max_Age == 100
     if (level == 6) {
@@ -178,4 +175,3 @@ GameOutcome Escape::end_loop(int level, GameState& state) {
         }
     }
 };
-
